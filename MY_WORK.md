@@ -40,9 +40,9 @@
  
 ---
 
-## 🎥 Video Link
+## 🎥 Video Link 
 
-**Video Link**: [Paste your video link here]
+**Video Link**: []https://youtu.be/RYO41B2Lwcg 
 
 > ⚠️ **WARNING:** The video must be **publicly accessible** ("Anyone with the link can view") on **Google Drive**, **YouTube (Unlisted or Public)** or any other cloud file-sharing system. A private, restricted or broken link counts as a **missing video (-1 mark)**.
 >
@@ -85,7 +85,7 @@
 | 4 | Feature 3: Semaphore | `Feature 3: Replaced busy waiting with a counting semaphore` |
 | 5 | Development log entries | `Docs: Added development log entries 1-3` |
 | 6 | Reflection and answers | `Docs: Completed reflection and technical answers` |
-| 7 | Video link | `Docs: Added demo video link` |
+| 7 | Video link | `Docs: ` | https://youtu.be/RYO41B2Lwcg 
 
 **Rules:**
 - ✅ **One commit per feature.** Do not put all three features in one commit.
