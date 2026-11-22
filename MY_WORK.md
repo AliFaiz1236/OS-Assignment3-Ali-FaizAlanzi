@@ -32,10 +32,10 @@
 
 | Field | Your Answer |
 |-------|-------------|
-| **Full Name** | [Write your full name here] |
-| **Student ID** | [Write your student ID here] |
-| **University Email** | [yourid]@std.psau.edu.sa |
-| **GitHub Username** | [your-github-username] |
+| **Full Name** | [Write your full name here ; Ali Faiz Alanzi] |
+| **Student ID** | [Write your student ID here; 446050238] |
+| **University Email** | 446050238@std.psau.edu.sa |
+| **GitHub Username** | [AliFaiz1236] |
 | **Repository Link** | [Paste your repository link here] |
  
 ---
@@ -132,95 +132,96 @@
 
 ## Your Development Log
 
-### Entry 1 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
----
-
-### Entry 2 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
+### Entry 1 - [11\22 6pm]
+Entry 1 - November 22, 2026, 6:15 PM
+What I did: Read README.md and SchedulerSimulationSync.java, set my student ID 446050238, and ran the original starter program
+Details:
+Read README.md and traced how ReadyQueue, SharedStats, CpuWorker, and RaceWindow interact
+Set my student ID to 446050238 on line 304 of SchedulerSimulationSync.java
+Ran the original starter code and saved its output showing race conditions, busy waiting, and synchronization issues
+Committed and pushed: Set my student ID: 446050238
+Challenges: Identifying all shared variables and critical sections accessed concurrently across threads
+Solution: Read SchedulerSimulationSync.java from top to bottom and mapped each shared structure and method before editing
+Time spent: 50 minutes
 
 ---
 
-### Entry 3 - [Date and Time]
-**What I did**:
+### Entry 2 - [11\22 7 pm]
+**What I did**: Entry 2 - November 22, 2026, 7 PM
+Implemented Feature 1 by protecting ReadyQueue operations with a ReentrantLock
+Details:
+Used queueLock (ReentrantLock) in ReadyQueue around critical sections accessing list and map in add and poll
+Wrapped lock acquisition and release inside try ... finally blocks so locks are always released even if an exception occurs
+Tested queue behavior and committed Feature 1 changes
+Challenges: Making sure lock release happens reliably on every return or exception path in queue operations
+Solution: Placed queueLock.unlock() strictly inside finally blocks immediately after queueLock.lock(); try { ... }
+Time spent: 45 minute
+---
 
-**Details**:
+### Entry 3 - [11\22 8pm]
+Entry 3 - November 22, 2026, 9:50 PM
+What I did: Implemented Feature 2 by protecting SharedStats counters with locks for read and write operations
+Details:
+Protected updates and reads of completedProcessCount, contextSwitchCount, and totalServiceTime in SharedStats using ReentrantLock and try ... finally
+Fixed a duplicate call inside getCompletedProcessCount() before returning completedProcessCount
+Guarded getter methods as well so threads do not read inconsistent or partially updated counter values
+Committed and pushed Feature 2
+Challenges: Deciding between a single shared lock for all statistics versus separate locks for independent counters, and ensuring getters were protected
+Solution: Used dedicated locks per statistic counter with try ... finally blocks to avoid unnecessary contention while preserving mutual exclusion
+Time spent: 55 minutes
+---
 
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
+### Entry 4 - [11\22 9pm]
+Entry 4 - November 22, 2026, 1:30 PM
+What I did: Started Feature 3 by importing and initializing the counting semaphore availableItems and signaling process availability in ReadyQueue.add
+Details:
+Imported java.util.concurrent.Semaphore at the top of SchedulerSimulationSync.java
+Initialized final Semaphore availableItems = new Semaphore(0); in ReadyQueue so CpuWorker can access it cleanly
+Added availableItems.release(); inside ReadyQueue.add(Process process) whenever a process is added to the queue
+Challenges: Resolving cross-class access to availableItems from CpuWorker when private blocked direct access
+Solution: Removed the private modifier on availableItems in ReadyQueue while keeping it final
+Time spent: 40 minutes
 
 ---
 
-### Entry 4 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
----
-
-### Entry 5 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
+### Entry 5 - [11\22 10pm]
+Entry 5 - November 22, 2026, 5:20 PM
+What I did: Completed Feature 3 in CpuWorker.run() by replacing busy waiting with availableItems.acquire() and adding end-of-execution semaphore wake-up
+Details:
+Replaced the polling and Thread.sleep(20) busy-waiting loop in CpuWorker.run() with a blocking readyQueue.availableItems.acquire() call inside try ... catch (InterruptedException e) before readyQueue.poll()
+Removed a duplicate Thread thread = readyQueue.poll(); declaration and cleaned up stray characters in the loop
+Added if (SharedStats.getCompletedProcessCount() >= SharedStats.totalProcesses) { readyQueue.availableItems.release(SharedStats.totalProcesses); } so blocked worker threads wake up and terminate cleanly once all processes finish
+Committed and pushed Feature 3
+Challenges: Avoiding duplicate variable declarations in the while loop and preventing CpuWorker threads from remaining blocked on acquire() after completion
+Solution: Removed the duplicate declaration, handled InterruptedException cleanly, and released permits once completed processes reach totalProcesses
+Time spent: 60 minutes
 
 ---
 
-### Entry 6 - [Optional - Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
+### Entry 6 - [Optional - 11\22]
+Entry 6 - November 22, 2026, 8:45 PM
+What I did: Ran multiple verification tests on the final code and drafted documentation in MY_WORK.md
+Details:
+Executed multiple consecutive runs in the IDE to verify clean termination without WATCHDOG and all verification checks passing
+Wrote development log entries, reflection answers, and technical answers in MY_WORK.md
+Committed and pushed documentation updates to the GitHub repository
+Challenges: Ensuring every question in Part B and Part C respects the sentence limits and uses accurate examples from my implementation
+Solution: Reviewed each answer against the code changes and test runs before saving and pushing to GitHub
+Time spent: 50 minutes
 
 ---
 
 ## Development Log Summary
 
 > 💡 **TIP:** Fill this in **last**, after all entries are written.
+Total time spent on assignment: 5 hours (across November 12–13, 2026, plus the November 22, 2026 video demo)
 
-**Total time spent on assignment**: [X hours]
+Most challenging part: Coordinating CpuWorker blocking on availableItems.acquire() with proper wake-up (release) when all processes complete so no worker thread remains stuck waiting indefinitely.
 
-**Most challenging part**:
+Most interesting learning: Seeing firsthand how removing Thread.sleep polling and using ReentrantLock + Semaphore eliminates race conditions and wasted CPU polling while keeping shared state consistent.
 
-**Most interesting learning**:
+What I would do differently next time: Trace all variable scopes and TODO markers across classes carefully before making edits so duplicate statements or stray characters never sneak into the code.
 
-**What I would do differently next time**:
 
 ---
 
@@ -234,49 +235,36 @@
 >
 > 💡 **TIP:** Draft your answer in a few bullet points first, then turn them into sentences.
 
-## Question 1: What did you learn about synchronization?
+Question 1: What did you learn about synchronization?
+Your Answer: (5-7 sentences)
 
-> 💡 **TIP:** Talk about race conditions (read-modify-write), critical sections, mutual exclusion with `ReentrantLock` and `try/finally`, the role of a counting semaphore, and what surprised you when the starter failed.
+Working on this assignment taught me that concurrent threads executing read-modify-write operations on shared data can easily corrupt state when interleaved. A race condition occurs when multiple threads read or modify shared structures—such as ReadyQueue or SharedStats counters—without mutual exclusion. Using ReentrantLock with try ... finally blocks guarantees that only one thread enters a critical section at a time and that the lock is always released even if an exception happens. I also learned how a counting Semaphore (availableItems) coordinates threads based on available permits instead of repeatedly polling an empty queue. What surprised me most when running the starter code was how quickly timing delays like RaceWindow.pause() exposed conflicting thread behavior and incorrect statistics. Overall, proper synchronization turns unpredictable multi-threaded execution into deterministic, safe behavior.
 
-**Your Answer:** *(5-7 sentences)*
+Question 2: What was the most challenging part of this assignment?
+Your Answer: (5-7 sentences)
 
-[Write your answer here.]
+The most challenging part of this assignment was coordinating CpuWorker thread termination with the counting semaphore once all processes finished executing. When worker threads block on readyQueue.availableItems.acquire(), any remaining thread waiting on a permit will stay blocked if no further release() happens after the final process completes. Deciding when and how many permits to release at the end of the loop in CpuWorker.run() required careful thought about the loop condition checking SharedStats.getCompletedProcessCount() < SharedStats.totalProcesses. While making that edit, I also had to fix a duplicate Thread thread = readyQueue.poll(); declaration and a stray pasted text snippet that broke compilation. Resolving both the concurrency logic and the syntax issues made me appreciate how sensitive multi-threaded loops are to edge cases. Testing the program repeatedly helped confirm that all threads exit cleanly without triggering the watchdog.
 
-## Question 2: What was the most challenging part of this assignment?
+Question 3: How did you overcome the challenges you faced?
+Your Answer: (5-7 sentences)
 
-> 💡 **TIP:** Pick **one** specific challenge (understanding why the starter failed, choosing the lock granularity, the initial value of the semaphore, the shutdown of the CPUs, Git, the video) and say *why* it was hard.
+I overcame the challenges by reading README.md and SchedulerSimulationSync.java systematically before changing synchronization logic. Whenever a compiler error or unexpected behavior appeared, I inspected the exact line numbers and error messages in VS Code rather than guessing. For SharedStats and ReadyQueue, I checked every read and write path to make sure every lock() had a matching unlock() inside a finally block. For the semaphore in Feature 3, I verified cross-class access to availableItems, matched acquire() in CpuWorker.run() with release() in ReadyQueue.add(), and added end-of-work wake-up releases when completed processes reached totalProcesses. Running the program multiple times after each feature and committing changes incrementally helped me catch mistakes early and keep the repository organized.
 
-**Your Answer:** *(5-7 sentences)*
+Question 4: Where can synchronization concepts be applied in real-world applications?
+Your Answer: (5-7 sentences)
 
-[Write your answer here.]
+Synchronization concepts apply directly to banking applications where concurrent transactions update account balances and transaction logs. If two transfers read the same balance before writing back, a lost update can credit or debit money inaccurately, just like an unprotected counter in SharedStats. Online ticket or seat booking systems also rely on mutual exclusion so two users cannot reserve the last available seat at the exact same moment. Print queues and background job workers mirror ReadyQueue and CpuWorker, using semaphores or condition queues so worker threads wait efficiently until jobs arrive. Database systems similarly depend on locks and concurrency control to preserve consistency under heavy parallel load.
 
-## Question 3: How did you overcome the challenges you faced?
+Optional: What would you like to learn more about?
 
-> 💡 **TIP:** Describe your method: reading the slides and the documentation, adding `System.out.println` to debug, running the program many times, re-reading the README, testing after each small change, asking for help.
+Condition variables (Condition with ReentrantLock), lock-free atomic classes (AtomicInteger, AtomicLong), and deadlock detection/prevention algorithms in operating systems.
 
-**Your Answer:** *(5-7 sentences)*
+Optional: How confident do you feel about synchronization concepts now?
 
-[Write your answer here.]
+Confident with basic ReentrantLock and Semaphore usage and race-condition debugging; I want more practice with complex multi-lock ordering and condition queues.
 
-## Question 4: Where can synchronization concepts be applied in real-world applications?
-
-> 💡 **TIP:** Use real applications you know (banking and money transfers, ticket or seat booking, a shared counter on a website, a print queue, a database) and connect each one to what you built here (shared data, critical section, lock or semaphore).
-
-**Your Answer:** *(5-7 sentences)*
-
-[Write your answer here.]
-
-### Optional: What would you like to learn more about?
-
-[Any topics related to synchronization or operating systems that you're curious about?]
-
-### Optional: How confident do you feel about synchronization concepts now?
-
-[Beginner / Intermediate / Confident. What do you understand well? What needs more practice?]
-
-### Optional: Feedback on the assignment
-
-[Any comments? Was it helpful? Too easy or hard? Suggestions?]
+Optional: Feedback on the assignment
+The assignment was very helpful because seeing the broken starter first and fixing each feature step by step made abstract synchronization concepts concrete.
 
 ---
 
@@ -300,18 +288,10 @@
 
 [Write your answer here.]
 
-Verification block of the **original starter**:
-```
-[Paste the verification block (or the exception/watchdog message) of the starter here]
-```
 
-Verification block of **my final version**:
-```
-[Paste the verification block of your final version here (all lines ✔)]
-```
-
-**Explanation of the timeline:**
-[Explain the lost update step by step.]
+In the unpatched starter run for ID 446050238, shared counters in SharedStats and queue operations in ReadyQueue were accessed concurrently without mutual exclusion, causing mismatches between expected and observed values as well as thread contention or errors. A single lost update happens when two threads read the same counter value, pause or get preempted before writing, and both write back an incremented value based on the stale read. On a real machine even without RaceWindow.pause(), OS thread scheduling, context switches, and CPU cache or instruction reordering can still interleave these steps unpredictably. It is hard to detect because timing varies across runs, so the bug may appear intermittently or only under heavier load.
+Verification block of the original starter:
+[Paste the exact verification block / console output from your original starter run for Student ID 446050238 here]
 
 ## Question 2: Critical Sections and Lock Granularity
 
@@ -321,8 +301,9 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[Write your answer here.] 
 
+I protected ReadyQueue (list and map inside add and poll) with queueLock and protected the SharedStats counters (completedProcessCount, contextSwitchCount, and totalServiceTime across their update and getter methods) using separate ReentrantLock instances per statistic counter. Using per-counter locks instead of a single global statistics lock avoids blocking unrelated statistics updates while trading off slightly more lock management overhead, and keeping queueLock separate from statistics locks avoids unnecessary coupling or lock-ordering conflicts across subsystems. Mutual exclusion is enforced because every critical section requires acquiring its ReentrantLock and releasing it in a finally block. Progress is preserved because active threads release locks in finally without holding them across external blocking waits, though a default non-fair ReentrantLock does not strictly guarantee FIFO bounded waiting under heavy contention
 | Critical section (variable / method) | Lock used | Why it needs protection |
 |---|---|---|
 | [e.g., `ReadyQueue.poll()`] | [lock name] | [reason] |
@@ -337,6 +318,7 @@ Verification block of **my final version**:
 **Your Answer:** *(3-5 sentences)*
 
 [Write your answer here.]
+In the starter code, CpuWorker polled an empty queue in a loop and slept briefly (Thread.sleep(20)) while incrementing busyWaitPolls (observed value from starter run: [Paste exact Busy-waiting polls count from your starter output here]), wasting CPU cycles and polling repeatedly while waiting for work. The availableItems semaphore represents the number of ready process permits currently available to be dequeued from ReadyQueue, starting at 0 because the queue begins empty with no processes available to consume. Right after numProcesses initial add() calls—each calling availableItems.release()—the semaphore value is numProcesses (assuming no acquire() calls have consumed permits yet). Releasing permits once SharedStats.getCompletedProcessCount() >= SharedStats.totalProcesses wakes up CpuWorker threads blocked on availableItems.acquire() so they can exit the loop and terminate; without it, blocked worker threads would remain stuck waiting on the semaphore indefinitely.
 
 ## Question 4: Classical Problems and Deadlock
 
@@ -345,27 +327,26 @@ Verification block of **my final version**:
 > 💡 **TIP:** Recall the bounded-buffer solution of the slides (`empty`, `full`, `mutex`) and the order of `wait()` calls in the producer and the consumer. For the deadlock, think about a producer that holds the mutex while waiting for a free slot that only a consumer (who needs the mutex) can create.
 
 **Your Answer:** *(3-5 sentences)*
+Classical problem and roles:
+This matches the Producer-Consumer (Bounded-Buffer) problem from Chapter 5: process arrivals/enqueueing act as the producer adding processes to ReadyQueue, while CpuWorker threads act as consumers removing processes to run a quantum—and importantly, CpuWorker threads also act as producers when they re-enqueue a process that has not finished (!process.isFinished()).
 
-**Classical problem and roles**:
-[Name the problem; who is the producer, who is the consumer?]
+Semaphores for a bounded queue (name and initial value):
+For a bounded queue of capacity K, you would use three synchronization primitives/semaphores: empty initialized to K (available free slots), full initialized to 0 (available items to consume), and mutex initialized to 1 (binary semaphore / mutual exclusion lock protecting queue access).
 
-**Semaphores for a bounded queue (name and initial value)**:
-[Name the three semaphores and their initial values.]
-
-**Deadlock scenario and prevention**:
-[Describe the scenario and the necessary condition you would break.]
-
+Deadlock scenario and prevention:
+If a producer or re-enqueueing CpuWorker acquired mutex first and then called empty.acquire() when the queue is full (0 permits), it would block while holding mutex, preventing any consumer from acquiring mutex to remove an item and signal empty.release()—causing a deadlock. To prevent this, you can break the hold and wait (or circular wait) condition by acquiring/waiting on capacity semaphores (empty / full) before acquiring mutex and keeping the critical section short.
 ## Summary
 
-**Key concepts I understood through these questions:**
-1.
-2.
-3.
+1. How race conditions and lost updates arise from unsynchronized read-modify-write sequences and why try ... finally is essential with locks.
 
-**Concepts I need to study more:**
-1.
-2.
+2. How lock granularity (queueLock vs. SharedStats locks) affects concurrency, contention, and deadlock risk.
 
+3. How a counting semaphore (availableItems) replaces busy-waiting polling and requires wake-up releases so threads do not hang after completion.
+
+Concepts I need to study more:
+1. Bounded-buffer semaphore ordering (empty, full, mutex) and avoiding deadlock under multiple locks.
+
+2. Fairness trade-offs (fair vs. non-fair ReentrantLock) and condition variables in Java concurrency.
 ---
 
 # ✅ Final Checklist (complete before submitting)
