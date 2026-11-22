@@ -7,6 +7,7 @@ import java.util.Random;
 // TODO (Feature 1 and Feature 2): import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantLock;
 // TODO (Feature 3):               import java.util.concurrent.Semaphore;
+import java.util.concurrent.Semaphore;
 
 // ANSI Color Codes for enhanced terminal output (same as Assignment 1)
 class Colors {
@@ -73,9 +74,9 @@ class SharedStats {
     // TODO Feature 2: declare the lock(s) protecting the three shared variables
     // above here.
     // Separate ReentrantLocks for each independent counter in SharedStats
-private static final ReentrantLock contextSwitchLock = new ReentrantLock();
-private static final ReentrantLock completedProcessLock = new ReentrantLock();
-private static final ReentrantLock serviceTimeLock = new ReentrantLock();
+    private static final ReentrantLock contextSwitchLock = new ReentrantLock();
+    private static final ReentrantLock completedProcessLock = new ReentrantLock();
+    private static final ReentrantLock serviceTimeLock = new ReentrantLock();
     // Think about it: ONE lock for the three variables, or ONE lock PER variable?
     // (you must justify it in MY_WORK.md)
 
@@ -94,28 +95,28 @@ private static final ReentrantLock serviceTimeLock = new ReentrantLock();
     public static void incrementCompletedProcess() {
         // TODO Feature 2: protect this critical section
         // Lock completed process counter before updating
-completedProcessLock.lock();
-try {
-        int tmp = completedProcessCount;
-        RaceWindow.pause();
-        completedProcessCount = tmp + 1;
+        completedProcessLock.lock();
+        try {
+            int tmp = completedProcessCount;
+            RaceWindow.pause();
+            completedProcessCount = tmp + 1;
         } finally {
-    // Always release completed process lock
-    completedProcessLock.unlock();
-}
+            // Always release completed process lock
+            completedProcessLock.unlock();
+        }
     }
 
     public static void addServiceTime(int ms) {
         // TODO Feature 2: protect this critical section
         // Lock total service time before updating
 
-try {
-       serviceTimeLock.lock(); 
-        
+        try {
+            serviceTimeLock.lock();
+
         } finally {
-    // Always release service time lock
-    serviceTimeLock.unlock();
-}
+            // Always release service time lock
+            serviceTimeLock.unlock();
+        }
     }
 
     // Readers must also be protected (a read in the middle of an update is not safe
@@ -123,11 +124,11 @@ try {
     public static int getCompletedProcessCount() {
         // TODO Feature 2: protect this read
         completedProcessLock.lock();
-try {
-        return completedProcessCount;
+        try {
+            return completedProcessCount;
         } finally {
-    completedProcessLock.unlock();
-}
+            completedProcessLock.unlock();
+        }
     }
 
     public static int getContextSwitchCount() {
@@ -143,11 +144,11 @@ try {
     public static long getTotalServiceTime() {
         // TODO Feature 2: protect this read
         serviceTimeLock.lock();
-try {
-        return totalServiceTime;
-    } 
-    finally {
-        serviceTimeLock.unlock();
+        try {
+            return totalServiceTime;
+        } finally {
+            serviceTimeLock.unlock();
+        }
     }
 }
 
@@ -164,6 +165,8 @@ class ReadyQueue {
     private final ReentrantLock queueLock = new ReentrantLock();
     // TODO Feature 3: declare the counting semaphore that counts the processes
     // waiting in the ready queue here
+    // Counting semaphore tracking processes available in ReadyQueue
+    final Semaphore availableItems = new Semaphore(0);
 
     // Add a process to the ready queue (new process, or a process that did not
     // finish its quantum)
@@ -180,7 +183,8 @@ class ReadyQueue {
             queueLock.unlock();
         }
         // TODO Feature 3: signal that one more process is available in the queue
-
+        // Signal that one process is now available in ReadyQueue
+        availableItems.release();
         System.out.println(Colors.BLUE + "  ➕ " + Colors.BOLD + Colors.CYAN + process.getName() + Colors.RESET +
                 Colors.BLUE + " (Priority: " + process.getPriority() + ") added to ready queue" + Colors.RESET +
                 " │ Remaining: " + Colors.YELLOW + process.getRemainingTime() + "ms" + Colors.RESET +
@@ -365,20 +369,16 @@ class CpuWorker extends Thread {
 
             // TODO Feature 3: replace this polling loop by a blocking wait on the counting
             // semaphore
-            Thread thread = readyQueue.poll();
-            if (thread == null) {
-                // ⚠️ BUSY WAITING: the CPU keeps checking an empty queue instead of sleeping
-                // until
-                // a process is available. It wastes CPU time and needs the "completed == total"
-                // test above to stop.
-                SharedStats.busyWaitPolls.incrementAndGet(); // (counted for the verification block)
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    return;
-                }
-                continue;
+
+            // Block until a process is available in ReadyQueue
+            try {
+                readyQueue.availableItems.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
             }
+
+            Thread thread = readyQueue.poll();
 
             Process process = readyQueue.processOf(thread);
             System.out.println(Colors.MAGENTA + "  ┌─ [CPU-" + cpuId + "] picks " + Colors.BRIGHT_CYAN +
@@ -400,6 +400,9 @@ class CpuWorker extends Thread {
             // TODO Feature 3: when the LAST process has completed, wake up the CPUs that
             // are blocked on the
             // semaphore so that they can terminate (otherwise they would wait forever!)
+            if (SharedStats.getCompletedProcessCount() >= SharedStats.totalProcesses) {
+                readyQueue.availableItems.release(SharedStats.totalProcesses);
+            }
         }
     }
 }
